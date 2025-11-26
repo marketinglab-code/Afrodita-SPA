@@ -1,0 +1,14 @@
+{
+  "testEnvironment": "node",
+  "transform": {},
+  "testMatch": [
+    "**/src/tests/**/*.test.js"
+  ],
+  "collectCoverageFrom": [
+    "src/**/*.js",
+    "!src/tests/**",
+    "!src/server.js"
+  ],
+  "coverageDirectory": "coverage",
+  "verbose": true
+}
