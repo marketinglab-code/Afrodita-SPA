@@ -180,20 +180,32 @@ export const extractDataFromMessage = (message) => {
     extracted.date = tomorrow.toISOString().split('T')[0];
   }
   
-  // Detectar hora (formatos: 8pm, 20:00, 8:00pm, etc.)
+  // Detectar hora (formatos: 8pm, 20:00, 8:00pm, 3:30pm, etc.)
   const timePatterns = [
-    /(\d{1,2})\s*(pm|p\.m\.|PM)/i,
-    /(\d{1,2})\s*(am|a\.m\.|AM)/i,
-    /(\d{1,2}):(\d{2})\s*(pm|p\.m\.|PM)?/i,
+    /(\d{1,2}):(\d{2})\s*(pm|p\.m\.|PM|am|a\.m\.|AM)?/i,  // 3:30pm, 15:30
+    /(\d{1,2})\s*(pm|p\.m\.|PM)/i,                         // 3pm
+    /(\d{1,2})\s*(am|a\.m\.|AM)/i,                         // 8am
   ];
   
   for (const pattern of timePatterns) {
     const match = message.match(pattern);
     if (match) {
       let hour = parseInt(match[1]);
-      const minute = match[2] && !isNaN(parseInt(match[2])) ? parseInt(match[2]) : 0;
-      const isPM = match[3] && match[3].toLowerCase().includes('p');
+      let minute = 0;
+      let isPM = false;
       
+      // Determinar minutos y AM/PM según el patrón
+      if (match[2] && !isNaN(parseInt(match[2]))) {
+        // Tiene minutos (formato HH:MM)
+        minute = parseInt(match[2]);
+        isPM = match[3] && match[3].toLowerCase().includes('p');
+      } else {
+        // Sin minutos (formato HH am/pm)
+        minute = 0;
+        isPM = match[2] && match[2].toLowerCase().includes('p');
+      }
+      
+      // Convertir a formato 24 horas
       if (isPM && hour < 12) hour += 12;
       if (!isPM && hour === 12) hour = 0;
       
