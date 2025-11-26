@@ -15,7 +15,21 @@ const WASSENGER_API_URL = 'https://api.wassenger.com/v1';
 const sendWhatsAppMessage = async (phoneNumber, message) => {
   try {
     // Formatear número para WhatsApp (remover espacios, guiones, etc.)
-    const formattedPhone = phoneNumber.replace(/[\s\-\(\)]/g, '');
+    let formattedPhone = phoneNumber.replace(/[\s\-\(\)]/g, '');
+    
+    // Agregar código de país +593 si no lo tiene (Ecuador)
+    if (!formattedPhone.startsWith('+') && !formattedPhone.startsWith('593')) {
+      // Si empieza con 0, removerlo y agregar +593
+      if (formattedPhone.startsWith('0')) {
+        formattedPhone = '+593' + formattedPhone.substring(1);
+      } else {
+        formattedPhone = '+593' + formattedPhone;
+      }
+    } else if (formattedPhone.startsWith('593')) {
+      formattedPhone = '+' + formattedPhone;
+    }
+    
+    console.log(`📞 Enviando mensaje a: ${formattedPhone}`);
     
     const response = await axios.post(
       `${WASSENGER_API_URL}/messages`,
