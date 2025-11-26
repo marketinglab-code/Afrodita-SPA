@@ -99,8 +99,8 @@ router.post('/', async (req, res) => {
       data
     } = payload;
     
-    // Solo procesar mensajes entrantes
-    if (event !== 'message:in' && event !== 'message') {
+    // Solo procesar mensajes entrantes (acepta message:in, message:in:new, etc.)
+    if (!event || (!event.startsWith('message:in') && event !== 'message')) {
       console.log(`ℹ️ Evento ignorado: ${event}`);
       return res.status(200).json({ status: 'ignored', event });
     }
