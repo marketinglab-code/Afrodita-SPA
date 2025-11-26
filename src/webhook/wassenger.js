@@ -20,6 +20,13 @@ const WEBHOOK_SECRET = process.env.WASSENGER_WEBHOOK_SECRET;
  */
 const sendReply = async (phoneNumber, message) => {
   try {
+    // 🛡️ PROTECCIÓN: Bloquear cualquier mensaje que mencione "Aurora" (bot anterior)
+    if (message && message.toLowerCase().includes('aurora')) {
+      console.error('🚫 BLOQUEADO: Intento de enviar mensaje con "Aurora"');
+      console.error(`   Contenido: ${message.substring(0, 100)}...`);
+      throw new Error('Mensaje bloqueado: contiene referencia a identidad incorrecta');
+    }
+    
     const formattedPhone = phoneNumber.replace(/[\s\-\(\)]/g, '');
     
     const response = await axios.post(
@@ -142,11 +149,32 @@ router.post('/', async (req, res) => {
   }
 });
 
+// Cache de mensajes procesados (evitar duplicados de Wassenger)
+const processedMessages = new Set();
+const CACHE_EXPIRATION = 5 * 60 * 1000; // 5 minutos
+
+// Limpiar cache periódicamente
+setInterval(() => {
+  processedMessages.clear();
+}, CACHE_EXPIRATION);
+
 /**
  * Procesa el mensaje de forma asíncrona
  */
 const processMessageAsync = async (phone, message, displayName, messageType, rawData) => {
   try {
+    // Crear identificador único del mensaje
+    const messageId = rawData.id || `${phone}_${message}_${Date.now()}`;
+    
+    // Verificar si ya procesamos este mensaje
+    if (processedMessages.has(messageId)) {
+      console.log(`⏭️ Mensaje duplicado ignorado: ${messageId}`);
+      return;
+    }
+    
+    // Marcar mensaje como procesado
+    processedMessages.add(messageId);
+    
     // Registrar el callback de notificación al admin antes de procesar
     orchestrator.setAdminNotifyCallback(notifyAdmin);
     
