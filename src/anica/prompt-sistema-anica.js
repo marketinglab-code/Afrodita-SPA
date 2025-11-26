@@ -182,7 +182,7 @@ Datos recopilados hasta ahora:
 ${JSON.stringify(pendingForm.form_json, null, 2)}
 
 Datos que AÚN FALTAN:
-${getMissingFields(pendingForm.form_json)}
+${getMissingFields(pendingForm.form_json || {})}
 ` : 'No hay formulario en progreso'}
 
 ## Estado Post-Confirmación
@@ -236,6 +236,10 @@ Ahora responde al último mensaje del usuario con base en todo este contexto.`;
  * Identifica qué campos faltan en el formulario
  */
 const getMissingFields = (formData) => {
+  if (!formData || typeof formData !== 'object') {
+    return 'Todos los campos';
+  }
+  
   const required = ['model_code', 'service_type', 'date', 'start_time', 'city', 'payment_method'];
   const missing = [];
 
