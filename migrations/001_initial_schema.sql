@@ -30,6 +30,8 @@ CREATE TABLE IF NOT EXISTS models (
     display_name VARCHAR(255) NOT NULL,
     phone_number VARCHAR(20) NOT NULL,
     city VARCHAR(100),
+    hourly_rate DECIMAL(10, 2) DEFAULT 60.00,
+    image_url TEXT,
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
