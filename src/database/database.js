@@ -11,7 +11,7 @@ import db from './postgres-adapter.js';
 
 export const getUserByPhone = async (phoneNumber) => {
   const result = await db.query(
-    'SELECT * FROM users WHERE phone_number = ?',
+    'SELECT * FROM users WHERE phone_number = $1',
     [phoneNumber]
   );
   return result.rows[0] || null;
@@ -27,7 +27,7 @@ export const createUser = async (userData) => {
 
   const result = await db.query(
     `INSERT INTO users (phone_number, name, email, whatsapp_display_name, first_visit, last_message_at)
-     VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+     VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
      ON CONFLICT (phone_number) DO UPDATE 
      SET last_message_at = CURRENT_TIMESTAMP,
          conversation_count = users.conversation_count + 1
@@ -66,7 +66,7 @@ export const incrementConversationCount = async (phoneNumber) => {
     `UPDATE users 
      SET conversation_count = conversation_count + 1,
          last_message_at = CURRENT_TIMESTAMP
-     WHERE phone_number = ?`,
+     WHERE phone_number = $1`,
     [phoneNumber]
   );
 };
@@ -77,7 +77,7 @@ export const incrementConversationCount = async (phoneNumber) => {
 
 export const getModelByCode = async (code) => {
   const result = await db.query(
-    'SELECT * FROM models WHERE code = ? AND is_active = TRUE',
+    'SELECT * FROM models WHERE code = $1 AND is_active = TRUE',
     [code]
   );
   return result.rows[0] || null;
@@ -95,7 +95,7 @@ export const createModel = async (modelData) => {
   
   const result = await db.query(
     `INSERT INTO models (code, display_name, phone_number, city)
-     VALUES (?, ?, ?, ?)
+     VALUES ($1, $2, $3, $4)
      RETURNING *`,
     [code, display_name, phone_number, city]
   );
@@ -129,7 +129,7 @@ export const createReservation = async (reservationData) => {
      (user_phone, model_code, service_type, date, start_time, end_time, 
       duration_hours, guest_count, total_price, was_free, payment_method, 
       payment_data, calendar_event_id, status, payment_status)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'pending')
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 'pending', 'pending')
      RETURNING *`,
     [user_phone, model_code, service_type, date, start_time, end_time,
      duration_hours, guest_count, total_price, was_free, payment_method,
@@ -173,7 +173,7 @@ export const confirmReservation = async (reservationId) => {
     `UPDATE reservations 
      SET status = 'confirmed', 
          confirmed_at = CURRENT_TIMESTAMP
-     WHERE id = ?
+     WHERE id = $1
      RETURNING *`,
     [reservationId]
   );
@@ -182,14 +182,14 @@ export const confirmReservation = async (reservationId) => {
 
 export const getReservationById = async (reservationId) => {
   const result = await db.query(
-    'SELECT * FROM reservations WHERE id = ?',
+    'SELECT * FROM reservations WHERE id = $1',
     [reservationId]
   );
   return result.rows[0] || null;
 };
 
 export const getUserReservations = async (phoneNumber, status = null) => {
-  let query = 'SELECT * FROM reservations WHERE user_phone = ?';
+  let query = 'SELECT * FROM reservations WHERE user_phone = $1';
   const params = [phoneNumber];
 
   if (status) {
@@ -206,7 +206,7 @@ export const getUserReservations = async (phoneNumber, status = null) => {
 export const getUpcomingReservations = async (phoneNumber) => {
   const result = await db.query(
     `SELECT * FROM reservations 
-     WHERE user_phone = ? 
+     WHERE user_phone = $1 
      AND status IN ('pending', 'confirmed')
      AND date >= CURRENT_DATE
      ORDER BY date ASC, start_time ASC`,
@@ -232,7 +232,7 @@ export const saveInteraction = async (interactionData) => {
   await db.query(
     `INSERT INTO interactions 
      (user_phone, agent_name, direction, type, payload, message_text)
-     VALUES (?, ?, ?, ?, ?, ?)`,
+     VALUES ($1, $2, $3, $4, $5, $6)`,
     [user_phone, agent_name, direction, type, JSON.stringify(payload), message_text]
   );
 };
@@ -244,7 +244,7 @@ export const saveInteraction = async (interactionData) => {
 export const getPendingConfirmation = async (phoneNumber) => {
   const result = await db.query(
     `SELECT * FROM pending_confirmations 
-     WHERE user_phone = ? 
+     WHERE user_phone = $1 
      AND expires_at > CURRENT_TIMESTAMP
      ORDER BY created_at DESC
      LIMIT 1`,
@@ -256,16 +256,16 @@ export const getPendingConfirmation = async (phoneNumber) => {
 export const savePendingConfirmation = async (phoneNumber, formData, ttlMinutes = 120) => {
   // Delete existing pending confirmations for this user
   await db.query(
-    'DELETE FROM pending_confirmations WHERE user_phone = ?',
+    'DELETE FROM pending_confirmations WHERE user_phone = $1',
     [phoneNumber]
   );
 
   const result = await db.query(
     `INSERT INTO pending_confirmations 
      (user_phone, form_json, expires_at)
-     VALUES (?, ?, CURRENT_TIMESTAMP + INTERVAL '? minutes')
+     VALUES ($1, $2, CURRENT_TIMESTAMP + INTERVAL '${ttlMinutes} minutes')
      RETURNING *`,
-    [phoneNumber, JSON.stringify(formData), ttlMinutes]
+    [phoneNumber, JSON.stringify(formData)]
   );
 
   return result.rows[0];
@@ -275,7 +275,7 @@ export const updatePendingConfirmation = async (phoneNumber, formData) => {
   const result = await db.query(
     `UPDATE pending_confirmations 
      SET form_json = ?, updated_at = CURRENT_TIMESTAMP
-     WHERE user_phone = ? AND expires_at > CURRENT_TIMESTAMP
+     WHERE user_phone = $1 AND expires_at > CURRENT_TIMESTAMP
      RETURNING *`,
     [JSON.stringify(formData), phoneNumber]
   );
@@ -284,7 +284,7 @@ export const updatePendingConfirmation = async (phoneNumber, formData) => {
 
 export const deletePendingConfirmation = async (phoneNumber) => {
   await db.query(
-    'DELETE FROM pending_confirmations WHERE user_phone = ?',
+    'DELETE FROM pending_confirmations WHERE user_phone = $1',
     [phoneNumber]
   );
 };
@@ -302,7 +302,7 @@ export const cleanExpiredPendingConfirmations = async () => {
 
 export const getReservationState = async (phoneNumber) => {
   const result = await db.query(
-    'SELECT * FROM reservation_state WHERE user_phone = ?',
+    'SELECT * FROM reservation_state WHERE user_phone = $1',
     [phoneNumber]
   );
   return result.rows[0] || null;
@@ -312,7 +312,7 @@ export const setReservationCooldown = async (phoneNumber, reservationId, cooldow
   await db.query(
     `INSERT INTO reservation_state 
      (user_phone, just_confirmed_until, last_reservation_id)
-     VALUES (?, CURRENT_TIMESTAMP + INTERVAL '? minutes', ?)
+     VALUES ($1, CURRENT_TIMESTAMP + INTERVAL '$2 minutes', $3)
      ON CONFLICT (user_phone) 
      DO UPDATE SET 
        just_confirmed_until = CURRENT_TIMESTAMP + INTERVAL '? minutes',
@@ -337,7 +337,7 @@ export const isInCooldown = async (phoneNumber) => {
 export const getPartialForm = async (phoneNumber) => {
   const result = await db.query(
     `SELECT * FROM partial_forms 
-     WHERE user_phone = ?
+     WHERE user_phone = $1
      ORDER BY updated_at DESC
      LIMIT 1`,
     [phoneNumber]
@@ -352,7 +352,7 @@ export const savePartialForm = async (phoneNumber, formData) => {
     const result = await db.query(
       `UPDATE partial_forms 
        SET form_data = ?, updated_at = CURRENT_TIMESTAMP
-       WHERE user_phone = ?
+       WHERE user_phone = $1
        RETURNING *`,
       [JSON.stringify(formData), phoneNumber]
     );
@@ -360,7 +360,7 @@ export const savePartialForm = async (phoneNumber, formData) => {
   } else {
     const result = await db.query(
       `INSERT INTO partial_forms (user_phone, form_data)
-       VALUES (?, ?)
+       VALUES ($1, $2)
        RETURNING *`,
       [phoneNumber, JSON.stringify(formData)]
     );
@@ -370,7 +370,7 @@ export const savePartialForm = async (phoneNumber, formData) => {
 
 export const deletePartialForm = async (phoneNumber) => {
   await db.query(
-    'DELETE FROM partial_forms WHERE user_phone = ?',
+    'DELETE FROM partial_forms WHERE user_phone = $1',
     [phoneNumber]
   );
 };
@@ -383,7 +383,7 @@ export const saveConversationMessage = async (phoneNumber, role, content, agentN
   await db.query(
     `INSERT INTO conversation_history 
      (user_phone, role, content, agent_name)
-     VALUES (?, ?, ?, ?)`,
+     VALUES ($1, $2, $3, $4)`,
     [phoneNumber, role, content, agentName]
   );
 };
@@ -391,7 +391,7 @@ export const saveConversationMessage = async (phoneNumber, role, content, agentN
 export const getConversationHistory = async (phoneNumber, limit = 10) => {
   const result = await db.query(
     `SELECT * FROM conversation_history 
-     WHERE user_phone = ?
+     WHERE user_phone = $1
      ORDER BY created_at DESC
      LIMIT ?`,
     [phoneNumber, limit]
@@ -401,7 +401,7 @@ export const getConversationHistory = async (phoneNumber, limit = 10) => {
 
 export const clearConversationHistory = async (phoneNumber) => {
   await db.query(
-    'DELETE FROM conversation_history WHERE user_phone = ?',
+    'DELETE FROM conversation_history WHERE user_phone = $1',
     [phoneNumber]
   );
 };
