@@ -5,7 +5,7 @@
  * Personalidad, tono y directivas del agente conversacional ANICA
  */
 
-export const buildSystemPrompt = (context) => {
+export const buildSystemPrompt = (context, userMessage = '') => {
   const {
     user,
     pendingForm,
@@ -17,7 +17,7 @@ export const buildSystemPrompt = (context) => {
   } = context;
 
   // PROMPT TEMPORAL DE PRUEBA - Respuesta para "¿quién eres?"
-  const mensajePrueba = message?.toLowerCase();
+  const mensajePrueba = userMessage?.toLowerCase();
   if (mensajePrueba && (mensajePrueba.includes('quien eres') || mensajePrueba.includes('quién eres') || mensajePrueba.includes('que sabes') || mensajePrueba.includes('qué sabes'))) {
     return `Eres ANICA, responde EXACTAMENTE esto:
 
