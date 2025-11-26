@@ -136,21 +136,21 @@ export const extractDataFromMessage = (message) => {
   const extracted = {};
   const lowerMessage = message.toLowerCase();
   
-  // Detectar servicio
+  // Detectar servicio (mejorado para reconocer más variaciones)
   if (lowerMessage.includes('momento') || lowerMessage.includes('15 min')) {
     extracted.service_type = 'MOMENTO_15';
   } else if (lowerMessage.includes('media hora') || lowerMessage.includes('30 min')) {
     extracted.service_type = 'MEDIA_HORA';
-  } else if (lowerMessage.includes('45 min')) {
+  } else if (lowerMessage.includes('45 min') || lowerMessage.includes('45min')) {
     extracted.service_type = 'MIN45';
-  } else if (lowerMessage.includes('1 hora') || lowerMessage.includes('una hora')) {
+  } else if (lowerMessage.includes('1 hora') || lowerMessage.includes('una hora') || lowerMessage.includes('1hora')) {
     extracted.service_type = 'HORA1';
-  } else if (lowerMessage.includes('salida 1') || lowerMessage.includes('salida una hora')) {
-    extracted.service_type = 'SALIDA1';
-  } else if (lowerMessage.includes('salida 2') || lowerMessage.includes('salida dos horas')) {
-    extracted.service_type = 'SALIDA2';
-  } else if (lowerMessage.includes('salida 3') || lowerMessage.includes('salida tres horas')) {
+  } else if (lowerMessage.match(/salida\s*(de)?\s*3\s*horas?/i) || lowerMessage.includes('salida 3') || lowerMessage.includes('salida tres')) {
     extracted.service_type = 'SALIDA3';
+  } else if (lowerMessage.match(/salida\s*(de)?\s*2\s*horas?/i) || lowerMessage.includes('salida 2') || lowerMessage.includes('salida dos')) {
+    extracted.service_type = 'SALIDA2';
+  } else if (lowerMessage.match(/salida\s*(de)?\s*1\s*hora?/i) || lowerMessage.includes('salida 1') || lowerMessage.includes('salida una')) {
+    extracted.service_type = 'SALIDA1';
   }
   
   // Detectar método de pago
