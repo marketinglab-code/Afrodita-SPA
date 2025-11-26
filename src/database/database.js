@@ -393,7 +393,7 @@ export const getConversationHistory = async (phoneNumber, limit = 10) => {
     `SELECT * FROM conversation_history 
      WHERE user_phone = $1
      ORDER BY created_at DESC
-     LIMIT ?`,
+     LIMIT $2`,
     [phoneNumber, limit]
   );
   return result.rows.reverse(); // Más antiguo primero
