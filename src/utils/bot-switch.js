@@ -51,4 +51,4 @@ class BotSwitch {
 // Singleton
 const botSwitch = new BotSwitch();
 
-module.exports = botSwitch;
+export default botSwitch;
