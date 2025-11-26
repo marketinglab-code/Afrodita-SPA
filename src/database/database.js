@@ -274,8 +274,8 @@ export const savePendingConfirmation = async (phoneNumber, formData, ttlMinutes 
 export const updatePendingConfirmation = async (phoneNumber, formData) => {
   const result = await db.query(
     `UPDATE pending_confirmations 
-     SET form_json = ?, updated_at = CURRENT_TIMESTAMP
-     WHERE user_phone = $1 AND expires_at > CURRENT_TIMESTAMP
+     SET form_json = $1::jsonb, updated_at = CURRENT_TIMESTAMP
+     WHERE user_phone = $2 AND expires_at > CURRENT_TIMESTAMP
      RETURNING *`,
     [JSON.stringify(formData), phoneNumber]
   );
