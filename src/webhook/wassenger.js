@@ -124,13 +124,18 @@ router.post('/', async (req, res) => {
       console.error(`   Message ID: ${data.id}`);
       console.error(`   Timestamp: ${data.timestamp}`);
       console.error(`   Content: ${data.body.substring(0, 150)}`);
+      console.error(`   Source: ${data.meta?.source || 'unknown'}`);
+      console.error(`   Via: ${data.meta?.via || 'unknown'}`);
       
-      // Enviar mensaje de corrección inmediato al usuario
+      // Enviar mensaje de corrección inmediato y claro al usuario
       try {
-        await sendReply(
-          data.toNumber,
-          '⚠️ Disculpa, hubo un error técnico con un mensaje anterior. Por favor ignóralo.\n\nSoy ANICA, tu agente de agendamiento de Afrodita Spa. 😊\n\n¿En qué puedo ayudarte hoy?'
-        );
+        const correctionMessage = `⚠️ Disculpa, hubo un error técnico con un mensaje anterior. Por favor ignóralo.
+
+Soy ANICA, tu agente de agendamiento de Afrodita Spa. 😊
+
+¿En qué puedo ayudarte hoy?`;
+        
+        await sendReply(data.toNumber, correctionMessage);
         console.log('✅ Mensaje de corrección enviado');
       } catch (err) {
         console.error('❌ Error enviando corrección:', err.message);
