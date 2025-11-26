@@ -189,7 +189,9 @@ export const processIncomingMessage = async (messageData) => {
     const isConfirmation = detectConfirmation(message);
     const formComplete = currentForm && partialForm.isFormComplete(currentForm.data);
     
-    if (isConfirmation && formComplete && allowNewReservation) {
+    // Si hay formulario completo + confirmación → confirmar independientemente del cooldown
+    // El cooldown solo aplica a NUEVAS reservas, no a confirmar formularios parciales
+    if (isConfirmation && formComplete) {
       console.log(`✅ Confirmación detectada - Procesando reserva...`);
       
       const confirmationResult = await confirmReservation(phone, currentForm.data, user);
