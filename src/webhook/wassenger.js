@@ -106,6 +106,30 @@ router.post('/', async (req, res) => {
       data
     } = payload;
     
+    // 🚨 DETECCIÓN DE AURORA: Si Wassenger envía mensaje outbound con "Aurora"
+    if (event && event.startsWith('message:out') && data.body && data.body.includes('Aurora')) {
+      console.error('🚨 ALERTA: Wassenger envió mensaje de Aurora desde su plataforma!');
+      console.error(`   Message ID: ${data.id}`);
+      console.error(`   Timestamp: ${data.timestamp}`);
+      console.error(`   Content: ${data.body.substring(0, 150)}`);
+      
+      // Enviar mensaje de corrección inmediato al usuario
+      try {
+        await sendReply(
+          data.toNumber,
+          '⚠️ Disculpa, hubo un error técnico con un mensaje anterior. Por favor ignóralo.\n\nSoy ANICA, tu agente de agendamiento de Afrodita Spa. 😊\n\n¿En qué puedo ayudarte hoy?'
+        );
+        console.log('✅ Mensaje de corrección enviado');
+      } catch (err) {
+        console.error('❌ Error enviando corrección:', err.message);
+      }
+      
+      return res.status(200).json({ 
+        status: 'aurora_blocked',
+        message: 'Aurora message detected and correction sent'
+      });
+    }
+    
     // Solo procesar mensajes entrantes (acepta message:in, message:in:new, etc.)
     if (!event || (!event.startsWith('message:in') && event !== 'message')) {
       console.log(`ℹ️ Evento ignorado: ${event}`);
