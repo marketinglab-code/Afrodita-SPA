@@ -157,7 +157,7 @@ export const processIncomingMessage = async (messageData) => {
     };
     
     // 8. Generar prompt de sistema
-    const systemPrompt = buildSystemPrompt(context);
+    const systemPrompt = buildSystemPrompt(context, message);
     
     // 9. Llamar a OpenAI
     const aiResponse = await openai.chat.completions.create({
