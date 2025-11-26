@@ -114,8 +114,9 @@ app.get('/bot/status', (req, res) => {
   });
 });
 
-// Wassenger webhook
+// Wassenger webhook (múltiples rutas para compatibilidad)
 app.use('/webhook/wassenger', wassengerWebhook);
+app.use('/webhook', wassengerWebhook); // Redirección para compatibilidad
 
 // ============================================
 // ERROR HANDLING
