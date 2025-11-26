@@ -121,6 +121,7 @@ export const createReservation = async (reservationData) => {
     was_free = false,
     payment_method,
     payment_data = {},
+    city = null,
     calendar_event_id = null
   } = reservationData;
 
@@ -128,12 +129,12 @@ export const createReservation = async (reservationData) => {
     `INSERT INTO reservations 
      (user_phone, model_code, service_type, date, start_time, end_time, 
       duration_hours, guest_count, total_price, was_free, payment_method, 
-      payment_data, calendar_event_id, status, payment_status)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 'pending', 'pending')
+      payment_data, city, calendar_event_id, status, payment_status)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, 'pending', 'pending')
      RETURNING *`,
     [user_phone, model_code, service_type, date, start_time, end_time,
      duration_hours, guest_count, total_price, was_free, payment_method,
-     JSON.stringify(payment_data), calendar_event_id]
+     JSON.stringify(payment_data), city, calendar_event_id]
   );
 
   return result.rows[0];

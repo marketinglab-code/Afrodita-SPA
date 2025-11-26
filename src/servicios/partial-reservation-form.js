@@ -264,12 +264,24 @@ export const formToReservation = (formData, userPhone) => {
     throw new Error(`Invalid service type: ${formData.service_type}`);
   }
   
+  // Calcular end_time basado en start_time y duración
+  let end_time = null;
+  if (formData.start_time && service.duration) {
+    const [hours, minutes, seconds] = formData.start_time.split(':').map(Number);
+    const startMinutes = hours * 60 + minutes;
+    const endMinutes = startMinutes + (service.duration * 60);
+    const endHours = Math.floor(endMinutes / 60) % 24;
+    const endMins = endMinutes % 60;
+    end_time = `${String(endHours).padStart(2, '0')}:${String(endMins).padStart(2, '0')}:00`;
+  }
+  
   return {
     user_phone: userPhone,
     model_code: formData.model_code,
     service_type: formData.service_type,
     date: formData.date,
     start_time: formData.start_time,
+    end_time: end_time,
     duration_hours: service.duration,
     city: formData.city,
     payment_method: formData.payment_method,
