@@ -36,10 +36,10 @@ export const createCalendarEvent = async (reservation, model, user, notifyAdminC
     const endDateTime = `${dateStr}T${endTime}`;
     
     const event = {
-      summary: `Cita Afrodita Spa - ${model.display_name}`,
+      summary: 'SPA',
       description: `
 Reserva ID: ${reservation.id}
-Cliente: ${user.name || 'Sin nombre'} (${user.phone_number})
+Cliente: ${user.phone_number}
 Modelo: ${model.display_name} (${model.code})
 Servicio: ${reservation.service_type}
 Duración: ${reservation.duration_hours}h
@@ -48,7 +48,7 @@ Método de pago: ${reservation.payment_method}
 Total: $${reservation.total_price}
 Estado de pago: ${reservation.payment_status}
       `.trim(),
-      location: reservation.city,
+      location: `${reservation.city} - https://maps.google.com/?q=Afrodita+Spa+${reservation.city}`,
       start: {
         dateTime: startDateTime,
         timeZone: 'America/Guayaquil'
@@ -60,7 +60,6 @@ Estado de pago: ${reservation.payment_status}
       reminders: {
         useDefault: false,
         overrides: [
-          { method: 'popup', minutes: 60 },
           { method: 'popup', minutes: 15 }
         ]
       },
