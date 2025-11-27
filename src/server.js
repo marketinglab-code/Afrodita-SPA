@@ -68,42 +68,42 @@ app.get('/health', async (req, res) => {
 });
 
 // Bot Control Endpoints (protegidos con secret)
-app.post('/bot/enable', (req, res) => {
+app.post('/bot/enable', async (req, res) => {
   const secret = req.headers['x-admin-secret'] || req.query.secret;
   if (secret !== process.env.ADMIN_SECRET) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
   
-  botSwitch.enable();
+  await botSwitch.enable();
   res.json({ 
     status: 'enabled',
-    message: 'ANICA activada exitosamente'
+    message: 'ANICA activada exitosamente (persistido en DB)'
   });
 });
 
-app.post('/bot/disable', (req, res) => {
+app.post('/bot/disable', async (req, res) => {
   const secret = req.headers['x-admin-secret'] || req.query.secret;
   if (secret !== process.env.ADMIN_SECRET) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
   
-  botSwitch.disable();
+  await botSwitch.disable();
   res.json({ 
     status: 'disabled',
-    message: 'ANICA desactivada exitosamente'
+    message: 'ANICA desactivada exitosamente (persistido en DB)'
   });
 });
 
-app.post('/bot/toggle', (req, res) => {
+app.post('/bot/toggle', async (req, res) => {
   const secret = req.headers['x-admin-secret'] || req.query.secret;
   if (secret !== process.env.ADMIN_SECRET) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
   
-  const newState = botSwitch.toggle();
+  const newState = await botSwitch.toggle();
   res.json({ 
     status: newState ? 'enabled' : 'disabled',
-    message: newState ? 'ANICA activada' : 'ANICA desactivada'
+    message: newState ? 'ANICA activada (persistido)' : 'ANICA desactivada (persistido)'
   });
 });
 
