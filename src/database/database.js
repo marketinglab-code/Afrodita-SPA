@@ -313,13 +313,13 @@ export const setReservationCooldown = async (phoneNumber, reservationId, cooldow
   await db.query(
     `INSERT INTO reservation_state 
      (user_phone, just_confirmed_until, last_reservation_id)
-     VALUES ($1, CURRENT_TIMESTAMP + INTERVAL '$2 minutes', $3)
+     VALUES ($1, CURRENT_TIMESTAMP + ($2 || ' minutes')::INTERVAL, $3)
      ON CONFLICT (user_phone) 
      DO UPDATE SET 
-       just_confirmed_until = CURRENT_TIMESTAMP + INTERVAL '? minutes',
-       last_reservation_id = ?,
+       just_confirmed_until = CURRENT_TIMESTAMP + ($2 || ' minutes')::INTERVAL,
+       last_reservation_id = $3,
        updated_at = CURRENT_TIMESTAMP`,
-    [phoneNumber, cooldownMinutes, reservationId, cooldownMinutes, reservationId]
+    [phoneNumber, cooldownMinutes, reservationId]
   );
 };
 

@@ -26,9 +26,14 @@ export const createCalendarEvent = async (reservation, model, user, notifyAdminC
       return null;
     }
     
-    const startDateTime = `${reservation.date}T${reservation.start_time}`;
+    // Convertir reservation.date a formato YYYY-MM-DD si es objeto Date
+    const dateStr = reservation.date instanceof Date 
+      ? reservation.date.toISOString().split('T')[0] 
+      : reservation.date;
+    
+    const startDateTime = `${dateStr}T${reservation.start_time}`;
     const endTime = calculateEndTime(reservation.start_time, reservation.duration_hours);
-    const endDateTime = `${reservation.date}T${endTime}`;
+    const endDateTime = `${dateStr}T${endTime}`;
     
     const event = {
       summary: `Cita Afrodita Spa - ${model.display_name}`,
