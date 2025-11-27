@@ -4,7 +4,7 @@
  * Estado persistido en memoria con fallback a process.env
  */
 
-import db from '../db/conexion.js';
+import db from '../database/db.js';
 
 class BotSwitch {
   constructor() {
